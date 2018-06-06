@@ -1,0 +1,15 @@
+Debug/
+Release/
+.vs/
+
+!/Release/
+/Release/*
+!/Release/conf.bin
+!/Release/data_base.xls
+!/Release/DK.gif
+!/Release/Microsoft.Office.Interop.Excel.dll
+!/Release/Microsoft.Vbe.Interop.dll
+!/Release/play_list.kpl
+!/Release/play_list.m3u
+!/Release/UA.png
+
