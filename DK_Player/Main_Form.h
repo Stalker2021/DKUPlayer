@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cliext/vector>
+
 namespace DK_Player {
 	/// <summary>
 	/// Summary for Main_Form
@@ -37,18 +39,14 @@ namespace DK_Player {
 	private: System::Windows::Forms::RadioButton^  radio_DK;
 	private: System::Windows::Forms::RadioButton^  radio_UA;
 	private: System::Windows::Forms::ComboBox^  comboBox_YearStart;
-
 	private: System::Windows::Forms::Label^  label_Year;
 	private: System::Windows::Forms::ComboBox^  comboBox_YearEnd;
-
 	private: System::Windows::Forms::Label^  label1;
 	private: System::Windows::Forms::CheckedListBox^  checkedList_Tournament;
-
 	private: System::Windows::Forms::Label^  label2;
 	private: System::Windows::Forms::Label^  label3;
 	private: System::Windows::Forms::ComboBox^  comboBox_Player;
 	private: System::Windows::Forms::TextBox^  editPlayer;
-
 	private: System::Windows::Forms::Label^  label4;
 	private: System::Windows::Forms::Button^  button_Play;
 	private: System::Windows::Forms::Button^  button_Add;
@@ -57,43 +55,29 @@ namespace DK_Player {
 	private: System::Windows::Forms::Panel^  panel_Option;
 	private: System::Windows::Forms::Button^  button_Cancel;
 	private: System::Windows::Forms::Button^  button_OK;
-
-
 	private: System::Windows::Forms::Label^  label8;
 	private: System::Windows::Forms::Label^  label7;
 	private: System::Windows::Forms::Label^  label6;
 	private: System::Windows::Forms::Label^  label5;
 	private: System::Windows::Forms::Button^  button_KMP;
-
 	private: System::Windows::Forms::Button^  button_vUA;
-
 	private: System::Windows::Forms::Button^  button_vDK;
 	private: System::Windows::Forms::TextBox^  edit_KMP;
-
-
 	private: System::Windows::Forms::TextBox^  edit_vUA;
-
 	private: System::Windows::Forms::TextBox^  edit_vDK;
 	private: System::Windows::Forms::OpenFileDialog^  openFileDialog;
 	private: System::Windows::Forms::FolderBrowserDialog^  folderBrowserDialog;
 	private: System::Windows::Forms::Panel^  panel_Add;
 	private: System::Windows::Forms::ComboBox^  comboBox_TournamentAdd;
 	private: System::Windows::Forms::TextBox^  edit_RivalAdd;
-
-
-
 	private: System::Windows::Forms::Button^  button1;
 	private: System::Windows::Forms::Label^  label9;
 	private: System::Windows::Forms::ComboBox^  comboBox_PlayerAdd;
-
 	private: System::Windows::Forms::Label^  label10;
 	private: System::Windows::Forms::Button^  button2;
 	private: System::Windows::Forms::Label^  label11;
 	private: System::Windows::Forms::Label^  label_YearAdd;
-
-
 	private: System::Windows::Forms::ComboBox^  comboBox_YearAdd;
-
 	private: System::Windows::Forms::RadioButton^  radio_UAadd;
 	private: System::Windows::Forms::RadioButton^  radio_DKadd;
 	private: System::Windows::Forms::Label^  label13;
@@ -104,7 +88,6 @@ namespace DK_Player {
 	private: System::Windows::Forms::TextBox^  edit_TournamentShort;
 	private: System::Windows::Forms::Label^  label15;
 	private: System::Windows::Forms::TextBox^  edit_GoalGuest;
-
 	private: System::Windows::Forms::TextBox^  edit_GoalHome;
 	private: System::Windows::Forms::Label^  label16;
 	private: System::Windows::Forms::Panel^  panel_List;
@@ -112,23 +95,8 @@ namespace DK_Player {
 	private: System::Windows::Forms::Button^  button_ListPlay;
 	private: System::Windows::Forms::Button^  button_ListCancel;
 	private: System::Windows::Forms::CheckedListBox^  ListBox;
-private: System::Windows::Forms::Button^  button_ChoiceCancel;
-private: System::Windows::Forms::Button^  button_ChoiceAll;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	private: System::Windows::Forms::Button^  button_ChoiceCancel;
+	private: System::Windows::Forms::Button^  button_ChoiceAll;
 
 	private:
 		/// <summary>
@@ -989,12 +957,14 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 		String^ adress_vDK;
 		String^ adress_vUA;
 		String^ adress_KMP;
-		Excel::Application^ exFile;
-		Excel::Worksheet^ Shell_DK;
-		Excel::Worksheet^ Shell_UA;
-		Excel::Worksheet^ Shell_DK_Opponents;
-		Excel::Worksheet^ Shell_UA_Opponents;
-		Excel::Worksheet^ Shell_Tournament;
+		cliext::vector < Excel::SharedStringItem^ > string_table;
+		Excel::SpreadsheetDocument^ exFile;
+		Excel::WorkbookPart^ WBPart;
+		Excel::Worksheet^ Shell_DK = nullptr;
+		Excel::Worksheet^ Shell_UA = nullptr;
+		Excel::Worksheet^ Shell_DK_Opponents = nullptr;
+		Excel::Worksheet^ Shell_UA_Opponents = nullptr;
+		Excel::Worksheet^ Shell_Tournament = nullptr;
 		System::Collections::Generic::List<String^>^ list_name;
 		System::Collections::Generic::List<String^>^ list_goal;
 
@@ -1005,23 +975,44 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 				 adress_KMP=gcnew String(config->ReadLine());
 				 config->Close();
 
-				 exFile=gcnew Excel::Application();
-				 exFile->Workbooks->Open(Application::StartupPath+L"\\data_base", mis, mis, mis, mis, mis, mis, mis, mis, mis, mis, mis, mis, mis, mis);
-				 Shell_DK=(Excel::Worksheet^)exFile->ActiveWorkbook->Worksheets[L"DK_Team"];
-				 Shell_UA=(Excel::Worksheet^)exFile->ActiveWorkbook->Worksheets[L"UA_Team"];
-				 Shell_DK_Opponents=(Excel::Worksheet^)exFile->ActiveWorkbook->Worksheets[L"DK_Opponents"];
-				 Shell_UA_Opponents=(Excel::Worksheet^)exFile->ActiveWorkbook->Worksheets[L"UA_Opponents"];
-				 Shell_Tournament=(Excel::Worksheet^)exFile->ActiveWorkbook->Worksheets[L"Tournament"];
+				 exFile = Excel::SpreadsheetDocument::Open(Application::StartupPath + L"\\data_base.xlsx", true);
+
+				 WBPart = exFile->WorkbookPart;
+
+				 string_table.reserve(400);
+				 initStringTable(WBPart, %string_table);
+
+				 Excel::Workbook^ WB = WBPart->Workbook;
+				 Excel::Sheets^ sheets = exFile->WorkbookPart->Workbook->Sheets;
+
+				 int counter = 0;
+				 for each (Excel::WorksheetPart^ sheetPart in WBPart->WorksheetParts)
+				 {
+					 if (nullptr == Shell_DK && getSheetName(sheets, counter) == L"DK_Team")
+						 Shell_DK = sheetPart->Worksheet;
+					 else if (nullptr == Shell_UA && getSheetName(sheets, counter) == L"UA_Team")
+						 Shell_UA = sheetPart->Worksheet;
+					 else if (nullptr == Shell_DK_Opponents && getSheetName(sheets, counter) == L"DK_Opponents")
+						 Shell_DK_Opponents = sheetPart->Worksheet;
+					 else if (nullptr == Shell_UA_Opponents && getSheetName(sheets, counter) == L"UA_Opponents")
+						 Shell_UA_Opponents = sheetPart->Worksheet;
+					 else if (nullptr == Shell_Tournament && getSheetName(sheets, counter) == L"Tournament")
+						 Shell_Tournament = sheetPart->Worksheet;
+					 else
+						 MessageBox::Show("Invalid Shell. Name: " + getSheetName(sheets, counter));
+
+					 counter++;
+				 }
 
 				 String^ str;
 				 for(int i=1;;i++)
 				 {
-					 str=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,3])->Value2);
+					 str=getValue( Shell_Tournament, i, 3, %string_table);
 					 if(str==L"")
 						 break;
 					 if(str!=L"DK")
 						 continue;
-					 str=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,1])->Value2);
+					 str= getValue( Shell_Tournament, i, 1, %string_table);
 					 checkedList_Tournament->Items->Add(str);
 					 checkedList_Tournament->SetItemChecked(checkedList_Tournament->CheckedItems->Count,true);
 				 }
@@ -1035,20 +1026,20 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 				 String^ str2;
 				 for(int i=1;;i++)
 				 {
-					 str=Convert::ToString(((Excel::Range^)Shell_DK->Cells[i,1])->Value2);
+					 str=getValue( Shell_DK, i, 1, %string_table);
 					 if(str==L"")
 						 break;
-					 str2=Convert::ToString(((Excel::Range^)Shell_DK->Cells[i,2])->Value2);
+					 str2= getValue( Shell_DK, i, 2, %string_table);
 					 comboBox_Player->Items->Add(str+L" "+str2);
 				 }
 
-				 SetTextBoxCollection(editPlayer, Shell_DK_Opponents);
+				 SetTextBoxCollection(editPlayer, Shell_DK_Opponents, %string_table);
 
 				 pictureBox_Logo->ImageLocation=Application::StartupPath+L"\\DK.GIF";
 			 }
 
 	private: System::Void Main_Form_FormClosing(System::Object^  sender, System::Windows::Forms::FormClosingEventArgs^  e) {
-				 exFile->Quit();
+				exFile->Close();
 			 }
 
 	private: System::Void comboBox_YearStart_TextChanged(System::Object^  sender, System::EventArgs^  e) {
@@ -1087,7 +1078,7 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 						comboBox_YearStart->Items->Add(i.ToString());
 						comboBox_YearEnd->Items->Add(i.ToString());
 					 }
-					 SetTextBoxCollection(editPlayer, Shell_UA_Opponents);
+					 SetTextBoxCollection(editPlayer, Shell_UA_Opponents, %string_table);
 					 pictureBox_Logo->ImageLocation=Application::StartupPath+L"\\UA.PNG";
 				 }
 				 else
@@ -1101,19 +1092,19 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 						comboBox_YearStart->Items->Add(i.ToString()+L" / "+(i+1).ToString());
 						comboBox_YearEnd->Items->Add(i.ToString()+L" / "+(i+1).ToString());
 					 }
-					 SetTextBoxCollection(editPlayer, Shell_DK_Opponents);
+					 SetTextBoxCollection(editPlayer, Shell_DK_Opponents, %string_table);
 					 pictureBox_Logo->ImageLocation=Application::StartupPath+L"\\DK.GIF";
 				 }
 
 				 String^ str;
 				 for(int i=1;;i++)
 				 {
-					 str=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,3])->Value2);
+					 str= getValue( Shell_Tournament, i, 3, %string_table);
 					 if(str==L"")
 						 break;
 					 if(str!=team)
 						 continue;
-					 str=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,1])->Value2);
+					 str= getValue( Shell_Tournament, i, 1, %string_table);
 					 checkedList_Tournament->Items->Add(str);
 					 checkedList_Tournament->SetItemChecked(checkedList_Tournament->CheckedItems->Count,true);
 				 }
@@ -1121,10 +1112,10 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 				 String^ str2;
 				 for(int i=1;;i++)
 				 {
-					 str=Convert::ToString(((Excel::Range^)shell->Cells[i,1])->Value2);
+					 str= getValue( shell, i, 1, %string_table);
 					 if(str==L"")
 						 break;
-					 str2=Convert::ToString(((Excel::Range^)shell->Cells[i,2])->Value2);
+					 str2= getValue( shell, i, 2, %string_table);
 					 comboBox_Player->Items->Add(str+L" "+str2);
 				 }
 			 }
@@ -1165,10 +1156,10 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 					 for each(String^ tournament in checkedList_Tournament->CheckedItems)
 						 for (int i=1;;i++)
 						 {
-							 str=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,1])->Value2);
+							 str= getValue( Shell_Tournament, i, 1, %string_table);
 							 if(str==tournament)
 							 {
-								 list_tournament->Add(Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,2])->Value2));
+								 list_tournament->Add( getValue( Shell_Tournament, i, 2, %string_table));
 								 break;
 							 }
 							 if(str==L"")
@@ -1400,7 +1391,7 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 					 team=L"UA";
 					 for(int i=2012; i<=DateTime::Now.Year; i++)
 						comboBox_YearAdd->Items->Add(i.ToString());
-					 SetTextBoxCollection(edit_RivalAdd, Shell_UA_Opponents);
+					 SetTextBoxCollection(edit_RivalAdd, Shell_UA_Opponents, %string_table);
 				 }
 				 else
 				 {
@@ -1409,28 +1400,28 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 					 team=L"DK";
 					 for(int i=2010; i<=DateTime::Now.Year; i++)
 						comboBox_YearAdd->Items->Add(i.ToString()+L" / "+(i+1).ToString());
-					 SetTextBoxCollection(edit_RivalAdd, Shell_DK_Opponents);
+					 SetTextBoxCollection(edit_RivalAdd, Shell_DK_Opponents, %string_table);
 				 }
 
 				 String^ str;
 				 for(int i=1;;i++)
 				 {
-					 str=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,3])->Value2);
+					 str= getValue( Shell_Tournament, i, 3, %string_table);
 					 if(str==L"")
 						 break;
 					 if(str!=team)
 						 continue;
-					 str=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,1])->Value2);
+					 str= getValue( Shell_Tournament, i, 1, %string_table);
 					 comboBox_TournamentAdd->Items->Add(str);
 				 }
 
 				 String^ str2;
 				 for(int i=1;;i++)
 				 {
-					 str=Convert::ToString(((Excel::Range^)shell->Cells[i,1])->Value2);
+					 str= getValue( shell, i, 1, %string_table);
 					 if(str==L"")
 						 break;
-					 str2=Convert::ToString(((Excel::Range^)shell->Cells[i,2])->Value2);
+					 str2= getValue( shell, i, 2, %string_table);
 					 comboBox_PlayerAdd->Items->Add(str+L" "+str2);
 				 }
 			 }
@@ -1481,12 +1472,12 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 				 String^ tournament_name;
 				 for(int i=1; ; i++)
 				 {
-					tournament_name=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,3])->Value2);
+					tournament_name= getValue( Shell_Tournament, i, 3, %string_table);
 					if(tournament_name==L"")
 						break;
 					if((radio_DKadd->Checked && tournament_name!=L"DK") || (radio_UAadd->Checked && tournament_name!=L"UA"))
 						continue;
-					tournament_name=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,1])->Value2);
+					tournament_name= getValue( Shell_Tournament, i, 1, %string_table);
 					if(tournament_name==comboBox_TournamentAdd->Text)
 					{
 						if(edit_TournamentShort->Visible)
@@ -1494,10 +1485,10 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 							MessageBox::Show(L"Турнір із вказаною назвою вже існує.",L"Помилка");
 							return;
 						}
-						tournament_name=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,2])->Value2);
+						tournament_name= getValue( Shell_Tournament, i, 2, %string_table);
 						break;
 					}
-					tournament_name=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,2])->Value2);
+					tournament_name= getValue( Shell_Tournament, i, 2, %string_table);
 					if(edit_TournamentShort->Visible && tournament_name==edit_TournamentShort->Text)
 					{
 						MessageBox::Show(L"Турнір із вказаною скороченою назвою вже існує.",L"Помилка");
@@ -1518,13 +1509,13 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 					 String^ check;
 					 for (;; iter++)
 					 {
-						 check = Convert::ToString(((Excel::Range^)shell->Cells[iter, 1])->Value2);
+						 check = getValue( shell, iter, 1, %string_table);
 						 if (check == L"")
 							 break;
 					 }
 
-					 shell->Cells[iter, 1] = edit_RivalAdd->Text;
-					 exFile->ActiveWorkbook->Save();
+					 setValue( shell, iter, 1, edit_RivalAdd->Text, WBPart, %string_table);
+					 //exFile->Save();
 
 					 shell = nullptr;
 				 }
@@ -1558,20 +1549,20 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 					 String^ check;
 					 for(;; i++)
 					 {
-						 check=Convert::ToString(((Excel::Range^)shell->Cells[i,1])->Value2);
+						 check= getValue( shell, i, 1, %string_table);
 						 if(check==L"")
 							 break;
 					 }
 					 if(comboBox_PlayerAdd->Text->IndexOf(L" ")<0)
 					 {
-						 shell->Cells[i,1]=comboBox_PlayerAdd->Text;
+						 setValue( shell, i, 1, comboBox_PlayerAdd->Text, WBPart, %string_table);
 					 }
 					 else
 					 {
-						shell->Cells[i,1]=comboBox_PlayerAdd->Text->Substring(0,comboBox_PlayerAdd->Text->IndexOf(L" "));
-						shell->Cells[i,2]=comboBox_PlayerAdd->Text->Substring(comboBox_PlayerAdd->Text->IndexOf(L" ")+1,(comboBox_PlayerAdd->Text->Length)-comboBox_PlayerAdd->Text->IndexOf(L" ")-1);
+						 setValue(shell,i,1,comboBox_PlayerAdd->Text->Substring(0,comboBox_PlayerAdd->Text->IndexOf(L" ")), WBPart, %string_table);
+						 setValue(shell,i,2,comboBox_PlayerAdd->Text->Substring(comboBox_PlayerAdd->Text->IndexOf(L" ")+1,(comboBox_PlayerAdd->Text->Length)-comboBox_PlayerAdd->Text->IndexOf(L" ")-1), WBPart, %string_table);
 					 }
-					 exFile->ActiveWorkbook->Save();
+					 //exFile->ActiveWorkbook->Save();
 				 }
 				 check=true;
 				 System::IO::DirectoryInfo^ year_info = gcnew System::IO::DirectoryInfo(adress);
@@ -1599,17 +1590,17 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 					 String^ check;
 					 for(;; i++)
 					 {
-						 check=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,1])->Value2);
+						 check= getValue( Shell_Tournament, i, 1, %string_table);
 						 if(check==L"")
 							 break;
 					 }
-					 Shell_Tournament->Cells[i,1]=comboBox_TournamentAdd->Text;
-					 Shell_Tournament->Cells[i,2]=tournament_name;
+					 setValue(Shell_Tournament,i,1,comboBox_TournamentAdd->Text, WBPart, %string_table);
+					 setValue(Shell_Tournament,i,2,tournament_name, WBPart, %string_table);
 					 if(radio_DKadd->Checked)
-						 Shell_Tournament->Cells[i,3]=L"DK";
+						 setValue(Shell_Tournament,i,3,L"DK", WBPart, %string_table);
 					 else
-						 Shell_Tournament->Cells[i,3]=L"UA";
-					 exFile->ActiveWorkbook->Save();
+						 setValue(Shell_Tournament,i,3,L"UA", WBPart, %string_table);
+					 //exFile->ActiveWorkbook->Save();
 				 }
 				 adress=adress+dateTimePicker->Value.Year.ToString()+L".";
 				 if(dateTimePicker->Value.Month<10)
@@ -1669,22 +1660,22 @@ private: System::Windows::Forms::Button^  button_ChoiceAll;
 				 String^ str;
 				 for(int i=1;;i++)
 				 {
-					 str=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,3])->Value2);
+					 str= getValue( Shell_Tournament, i, 3, %string_table);
 					 if(str==L"")
 						 break;
 					 if(str!=team)
 						 continue;
-					 str=Convert::ToString(((Excel::Range^)Shell_Tournament->Cells[i,1])->Value2);
+					 str= getValue( Shell_Tournament, i, 1, %string_table);
 					 comboBox_TournamentAdd->Items->Add(str);
 				 }
 
 				 String^ str2;
 				 for(int i=1;;i++)
 				 {
-					 str=Convert::ToString(((Excel::Range^)shell->Cells[i,1])->Value2);
+					 str= getValue( shell, i, 1, %string_table);
 					 if(str==L"")
 						 break;
-					 str2=Convert::ToString(((Excel::Range^)shell->Cells[i,2])->Value2);
+					 str2= getValue( shell, i, 2, %string_table);
 					 comboBox_PlayerAdd->Items->Add(str+L" "+str2);
 				 }
 			 }

@@ -9,7 +9,16 @@ using namespace System::Windows::Forms;
 using namespace System::Data;
 using namespace System::Drawing;
 
-#define Excel Microsoft::Office::Interop::Excel
+namespace Excel
+{
+	using namespace System;
+	using namespace System::Collections::Generic;
+	using namespace System::Linq;
+	using namespace DocumentFormat::OpenXml;
+	using namespace DocumentFormat::OpenXml::Packaging;
+	using namespace DocumentFormat::OpenXml::Spreadsheet;
+}
+
 #define mis Type::Missing
 
 #include "function.h"

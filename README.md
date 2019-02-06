@@ -12,7 +12,9 @@ Capabilities:
 - program support keeping count of two teams.
 
 Restrictions:
-- MS Office should be instaled (2003 or later);
-- only KMPlayer could be used for reading playlist;
+- KMPlayer and Winamp could be used for reading playlist;
 - first team has type of season "autumn-spring", second - "spring-autumn" (counted by years); 
 - interface is set for FC "Dynamo Kyiv" and national team of Ukraine.
+
+Addition Information:
+- OpenXML SDK V2.5 is used.
