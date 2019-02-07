@@ -1,1 +1,7 @@
+Debug/
+Release/
 .vs/
+*.exe
+*.metagen
+*.pdb
+*.aps
