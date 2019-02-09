@@ -5,3 +5,4 @@ Release/
 *.metagen
 *.pdb
 *.aps
+!release_build/*.exe
