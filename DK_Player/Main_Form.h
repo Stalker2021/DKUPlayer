@@ -1711,10 +1711,10 @@ namespace DK_Player {
 				 lines[num++] = L"#EXTM3U";
 				 for (int i=0; i<list_goal->Count; i++)
 				 {
-					 lines[num++] = L"#EXTINF: "+list_name[i];
+					 lines[num++] = L"#EXTINF:,"+list_name[i];
 					 lines[num++] = list_goal[i];
 				 }
-				 IO::File::WriteAllLines(Application::StartupPath+L"\\play_list.m3u", lines,System::Text::Encoding::Default);
+				 IO::File::WriteAllLines(Application::StartupPath+L"\\play_list.m3u", lines,System::Text::Encoding::UTF8);
 
 				 System::Diagnostics::Process ^app = gcnew System::Diagnostics::Process();
 				 app->Start(L"\""+adress_KMP+L"\"",L"\""+Application::StartupPath+L"\\play_list.m3u"+L"\"");
